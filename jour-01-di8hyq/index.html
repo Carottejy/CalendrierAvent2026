@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#12100e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SPNdle">
+  <title>SPNdle</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1 class="titre">SPNdle</h1>
+      <p class="sous-titre">Le jeu quotidien des chasseurs</p>
+      <button class="btn-aide" id="btn-aide" aria-label="Règles du jeu">?</button>
+    </header>
+
+    <nav role="tablist" id="onglets">
+      <button role="tab" data-mode="classique"><span class="ico">🗂️</span>Classique<span class="fait"></span></button>
+      <button role="tab" data-mode="emojis"><span class="ico">😈</span>Émojis<span class="fait"></span></button>
+      <button role="tab" data-mode="monstres"><span class="ico">🐺</span>Monstres<span class="fait"></span></button>
+    </nav>
+
+    <main id="jeu"></main>
+
+    <footer>Un nouveau dossier chaque jour, jusqu'à Noël 🎄</footer>
+  </div>
+
+  <dialog id="aide">
+    <div class="carte">
+      <h2>Le carnet du chasseur</h2>
+      <p>Chaque jour, trois énigmes à résoudre. Elles changent à minuit.</p>
+      <h3>🗂️ Classique</h3>
+      <ul>
+        <li>Propose un personnage : chaque caractéristique se colore.</li>
+        <li><b style="color:var(--vert)">Vert</b> : identique. <b style="color:var(--orange)">Orange</b> : en partie. <b style="color:var(--rouge)">Rouge</b> : différent.</li>
+        <li>↑ / ↓ : la bonne saison est plus tard / plus tôt.</li>
+        <li>HdL : Hommes de Lettres (GB : britanniques).</li>
+        <li>Les saisons comptent toutes les versions du personnage (univers alternatif, fantôme…), pas les flashbacks.</li>
+        <li>Après 6 essais, tu peux révéler l'interprète.</li>
+      </ul>
+      <h3>😈 Émojis</h3>
+      <ul><li>Quatre émojis décrivent un personnage. Un nouveau se dévoile à chaque erreur.</li></ul>
+      <h3>🐺 Monstres</h3>
+      <ul><li>Retrouve la créature. Chaque erreur révèle un indice plus évident.</li></ul>
+      <button class="btn fermer" id="fermer-aide">Au boulot</button>
+    </div>
+  </dialog>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
