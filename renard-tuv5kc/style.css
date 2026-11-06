@@ -1,0 +1,201 @@
+:root {
+  --nuit: #142038;
+  --carte: rgba(255, 252, 245, .94);
+  --encre: #3a2a22;
+  --roux: #e8772e;
+  --roux-fonce: #c45c1d;
+  --doux: #8a7b70;
+  --font: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+body {
+  background: var(--nuit); color: var(--encre); font-family: var(--font);
+  -webkit-user-select: none; user-select: none;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.app {
+  height: 100dvh; max-width: 520px; margin: 0 auto;
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+
+/* En-tête : nom + jauges */
+.haut {
+  position: absolute; z-index: 5; top: 0; left: 0; right: 0;
+  padding: calc(env(safe-area-inset-top) + .6rem) .8rem .6rem;
+  display: flex; align-items: center; gap: .8rem;
+}
+.identite { flex: 0 0 auto; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.5); max-width: 40%; }
+.identite h1 { margin: 0; font-size: 1.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identite p { margin: 0; font-size: .75rem; opacity: .85; }
+.jauges {
+  flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .6rem;
+  background: rgba(255,255,255,.88); border-radius: .9rem; padding: .5rem .65rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+}
+.jauge { display: flex; align-items: center; gap: .35rem; }
+.jauge .ico { font-size: .95rem; width: 1.1rem; text-align: center; }
+.barre { flex: 1; height: .55rem; background: #eadfd3; border-radius: 1rem; overflow: hidden; }
+.barre i { display: block; height: 100%; width: 50%; border-radius: 1rem; background: #6cbf6a; transition: width .6s ease, background .6s; }
+.jauge.basse .barre i { background: #e2734a; }
+.jauge.moyenne .barre i { background: #e8b44a; }
+.jauge.basse .ico { animation: pouls 1.2s ease-in-out infinite; }
+@keyframes pouls { 50% { transform: scale(1.25); } }
+
+/* Scène */
+.scene { position: relative; flex: 1; touch-action: none; overflow: hidden; }
+.scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#etoiles, #astre { transition: opacity 1.5s; }
+.jour #etoiles { opacity: 0; }
+
+/* Renard : états */
+#dort, .tenue, .yeux-contents, .yeux-fermes, .sourcils, .bouche-ouverte, .bouche-triste { display: none; }
+.endormi #assis { display: none; }
+.endormi #dort { display: inline; }
+.content .yeux-ouverts, .yeux-fermes-actif .yeux-ouverts { display: none; }
+.content .yeux-contents { display: inline; }
+.content .joue { opacity: .55; transition: opacity .3s; }
+.yeux-fermes-actif .yeux-fermes { display: inline; }
+.yeux-fermes-actif .yeux-contents { display: none; }
+.triste .sourcils { display: inline; }
+.triste:not(.content):not(.bouche-active) .bouche-normale { display: none; }
+.triste:not(.content):not(.bouche-active) .bouche-triste { display: inline; }
+.content .sourcils { display: none; }
+.bouche-active .bouche-normale { display: none; }
+.bouche-active .bouche-ouverte { display: inline; }
+.porte-echarpe #tenue-echarpe, .porte-noeud #tenue-noeud,
+.porte-bonnet #tenue-bonnet, .porte-fleurs #tenue-fleurs { display: inline; }
+
+#queue { transform-origin: 236px 320px; animation: queue 2.6s ease-in-out infinite; }
+.content #queue { animation-duration: .7s; }
+.triste #queue { animation: none; transform: rotate(8deg); }
+@keyframes queue { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+
+.oeil { transform-box: fill-box; transform-origin: center; animation: cligne 5s infinite; }
+@keyframes cligne { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+
+#tete { transform-origin: 200px 215px; transition: transform .4s ease; }
+.triste #tete { transform: rotate(-6deg) translateY(4px); }
+.penche #tete { transform: rotate(8deg); }
+.oreille { transform-box: fill-box; transform-origin: 50% 100%; }
+#oreille-g.frisson { animation: oreille .45s ease 2; }
+#oreille-d.frisson { animation: oreille .45s ease 2; }
+@keyframes oreille { 50% { transform: rotate(-14deg) scaleY(.9); } }
+.bouche-ouverte { transform-box: fill-box; transform-origin: center; }
+.mache .bouche-ouverte { animation: mache .3s steps(2) infinite; }
+@keyframes mache { 50% { transform: scaleY(.3); } }
+
+#dort { animation: respire 3.6s ease-in-out infinite; transform-origin: 200px 345px; }
+@keyframes respire { 50% { transform: scaleY(1.035); } }
+
+#renard { transform-origin: 200px 345px; }
+.eternue #renard { animation: eternue .5s ease; }
+@keyframes eternue { 30% { transform: scale(1.04, .96); } 60% { transform: translateY(-6px) rotate(-2deg); } }
+.sautille #renard { animation: sautille .5s ease 2; }
+@keyframes sautille { 50% { transform: translateY(-18px); } }
+
+/* Neige qui tombe */
+.flocons { position: absolute; inset: 0; pointer-events: none; }
+.flocons span {
+  position: absolute; top: -10px; color: #fff; opacity: .85; font-size: 10px;
+  animation: tombe linear infinite;
+}
+@keyframes tombe { to { transform: translate(var(--vent, 20px), 105vh); } }
+
+/* Bulle de pensée/parole */
+.bulle {
+  position: absolute; z-index: 4; transform: translate(-50%, -100%);
+  background: #fff; color: var(--encre); border-radius: 1rem; padding: .5rem .8rem;
+  font-size: .95rem; width: max-content; max-width: 70%; text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25); animation: bulle .25s ease;
+}
+.bulle::after {
+  content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
+  border: 8px solid transparent; border-top-color: #fff; border-bottom: 0;
+}
+@keyframes bulle { from { opacity: 0; transform: translate(-50%, -80%) scale(.8); } }
+
+/* Particules (cœurs, étincelles, Zzz…) */
+.effets { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.particule {
+  position: absolute; transform: translate(-50%, -50%); font-size: 1.4rem;
+  animation: monte 1.2s ease-out forwards;
+}
+@keyframes monte {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(.6); }
+  to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -160%) scale(1.15); }
+}
+.zzz { font-weight: bold; color: #dfe8ff; font-size: 1.3rem; animation-duration: 2.4s; }
+.nourriture {
+  position: absolute; z-index: 6; font-size: 2.2rem; transform: translate(-50%, -50%);
+  transition: left .55s cubic-bezier(.3,.7,.4,1), top .55s cubic-bezier(.4,-0.4,.6,1), transform .55s;
+  pointer-events: none;
+}
+.noeud-tombe { animation: tombe-noeud .7s ease-in forwards; }
+@keyframes tombe-noeud { to { transform: translateY(70px) rotate(90deg); opacity: 0; } }
+
+.brosse-curseur {
+  position: absolute; z-index: 6; font-size: 2rem; pointer-events: none;
+  transform: translate(-20%, -80%) rotate(-20deg);
+}
+.astuce {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: .4rem; margin: 0;
+  text-align: center; font-size: .8rem; color: #5b6f88;
+}
+
+/* Barre d'actions */
+.actions {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: .25rem;
+  padding: .45rem .4rem calc(env(safe-area-inset-bottom) + .45rem);
+  background: #fffaf2; box-shadow: 0 -4px 16px rgba(0,0,0,.15); z-index: 5;
+}
+.actions button {
+  border: 0; background: transparent; border-radius: .8rem; padding: .35rem 0;
+  display: flex; flex-direction: column; align-items: center; gap: .1rem; font-size: .7rem; color: var(--doux);
+}
+.actions button span { font-size: 1.45rem; line-height: 1.2; }
+.actions button[aria-pressed="true"] { background: #fde6d3; color: var(--roux-fonce); font-weight: bold; }
+.actions button:disabled { opacity: .35; }
+
+/* Tiroir (nourriture, tenues) */
+.tiroir {
+  position: absolute; z-index: 6; left: .6rem; right: .6rem; bottom: calc(4.6rem + env(safe-area-inset-bottom));
+  background: var(--carte); border-radius: 1rem; padding: .7rem; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  animation: tiroir .25s ease;
+}
+@keyframes tiroir { from { opacity: 0; transform: translateY(14px); } }
+.tiroir h3 { margin: 0 0 .5rem; font-size: .9rem; text-align: center; color: var(--doux); font-weight: normal; }
+.choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.2rem, 1fr)); gap: .4rem; }
+.choix button {
+  border: 2px solid transparent; background: #fff; border-radius: .8rem; padding: .45rem 0 .3rem;
+  display: flex; flex-direction: column; align-items: center; font-size: .66rem; color: var(--doux);
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+.choix button span { font-size: 1.8rem; }
+.choix button[aria-pressed="true"] { border-color: var(--roux); color: var(--roux-fonce); }
+
+/* Accueil */
+dialog {
+  border: 0; border-radius: 1.2rem; padding: 1.5rem 1.3rem; max-width: min(88vw, 22rem);
+  text-align: center; color: var(--encre); background: #fffaf2;
+}
+dialog::backdrop { background: rgba(10, 18, 34, .75); }
+dialog h2 { font-size: 1.2rem; margin: .4rem 0; }
+dialog p { margin: .3rem 0 1rem; color: var(--doux); }
+.renardeau { font-size: 3.5rem; animation: sautille-solo 1.6s ease-in-out infinite; }
+@keyframes sautille-solo { 50% { transform: translateY(-8px); } }
+dialog input {
+  width: 100%; padding: .8rem; font-size: 1.1rem; text-align: center;
+  border: 2px solid #ecd9c6; border-radius: .8rem; margin-bottom: .8rem; font-family: var(--font);
+  -webkit-user-select: text; user-select: text;
+}
+dialog input:focus { outline: none; border-color: var(--roux); }
+.bouton {
+  border: 0; background: var(--roux); color: #fff; padding: .8rem 1.6rem; border-radius: 2rem;
+  font-weight: bold; font-size: 1rem; box-shadow: 0 4px 0 var(--roux-fonce);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #queue, .oeil, #dort, .flocons span { animation: none !important; }
+}

@@ -1,6 +1,12 @@
 [
   {
     "jour": null,
+    "slug": "renard-tuv5kc",
+    "titre": "Mon renard",
+    "icone": "tête de renard"
+  },
+  {
+    "jour": null,
     "slug": "spndle-f1n9zn",
     "titre": "SPNdle",
     "icone": "SPN"
