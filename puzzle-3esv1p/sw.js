@@ -1,6 +1,6 @@
 // Service worker propre à cette appli : il ne gère que son propre dossier.
 // Incrémenter VERSION à chaque modification de l'appli.
-const VERSION = 1;
+const VERSION = 2;
 const CACHE = 'puzzle-3esv1p-v' + VERSION;
 
 // Fichiers à garder hors ligne (ajouter ici les images, sons, etc. de l'appli)

@@ -2,7 +2,7 @@
   'use strict';
 
   const CLE = 'puzzle-v1';
-  const NIVEAUX = [3, 4, 6, 8];
+  const N = 8; // 8 × 8 = 64 pièces
   const $ = (id) => document.getElementById(id);
   const table = $('table');
   const plateau = $('plateau');
@@ -253,9 +253,6 @@
   function majCompteur() {
     const poses = partie.pieces.filter((p) => p.posee).length;
     $('compteur').textContent = `${poses} / ${partie.pieces.length}`;
-    document.querySelectorAll('#niveaux button').forEach((b) => {
-      b.setAttribute('aria-pressed', String(+b.dataset.n === partie.n));
-    });
   }
 
   function victoire(animation = true) {
@@ -266,7 +263,6 @@
     const s = Math.round(partie.ms / 1000);
     const temps = s >= 60 ? `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s` : `${s} s`;
     $('bilan').textContent = `${partie.pieces.length} pièces assemblées en ${temps}`;
-    $('plus-dur').hidden = partie.n === NIVEAUX[NIVEAUX.length - 1];
     $('victoire').hidden = false;
     if (!animation) return;
     const coeurs = $('coeurs');
@@ -299,10 +295,6 @@
     sauver();
   }
 
-  $('niveaux').addEventListener('click', (ev) => {
-    const b = ev.target.closest('button');
-    if (b && +b.dataset.n !== partie.n) charger(+b.dataset.n);
-  });
   $('melanger').addEventListener('click', () => {
     if (partie.fini) return;
     disperser(partie.pieces);
@@ -315,10 +307,6 @@
     const d = lire(); d.fantome = actif; ecrire(d);
   });
   $('rejouer').addEventListener('click', () => charger(partie.n, true));
-  $('plus-dur').addEventListener('click', () => {
-    const suivant = NIVEAUX[NIVEAUX.indexOf(partie.n) + 1] || partie.n;
-    charger(suivant, true);
-  });
 
   // Rotation ou redimensionnement : on recalcule la taille des pièces
   let minuterie;
@@ -344,7 +332,7 @@
   imageChargee.then(() => {
     const d = lire();
     if (d.fantome) { plateau.classList.add('fantome'); $('apercu').setAttribute('aria-pressed', 'true'); }
-    const n = NIVEAUX.includes(d.courant) ? d.courant : 4;
+    const n = N;
     const sauvee = (d.parties || {})[n];
     if (sauvee && sauvee.fini) {
       partie = sauvee;
