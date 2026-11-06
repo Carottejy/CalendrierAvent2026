@@ -52,14 +52,29 @@
     monstres: { candidats: MONSTRES.map((m) => m.nom), graine: 6606, icone: '🐺' },
   };
 
+  // Chaque tour complet de la liste utilise un nouvel ordre mélangé.
+  function ordreDuCycle(mode, cycle) {
+    const { candidats, graine } = MODES[mode];
+    const ordre = melange(candidats, graine + cycle * 7919);
+    if (cycle > 0) {
+      // pas deux fois la même réponse de suite à la jonction de deux cycles
+      const precedent = melange(candidats, graine + (cycle - 1) * 7919);
+      if (ordre[0] === precedent[precedent.length - 1]) [ordre[0], ordre[1]] = [ordre[1], ordre[0]];
+    }
+    return ordre;
+  }
+  function cibleAuJour(mode, n) {
+    const taille = MODES[mode].candidats.length;
+    const cycle = Math.floor(n / taille);
+    return ordreDuCycle(mode, cycle)[modulo(n, taille)];
+  }
   function cibleDuJour(mode) {
     const n = indexDuJour();
-    const ordre = melange(MODES[mode].candidats, MODES[mode].graine);
-    let cible = ordre[modulo(n, ordre.length)];
-    if (mode === 'emojis') {
+    let cible = cibleAuJour(mode, n);
+    if (mode === 'emojis' && cible === cibleAuJour('classique', n)) {
       // éviter le même personnage que le mode Classique le même jour
-      const classique = cibleDuJour('classique');
-      if (cible === classique) cible = ordre[modulo(n + 1, ordre.length)];
+      const ordre = ordreDuCycle(mode, Math.floor(n / MODES[mode].candidats.length));
+      cible = ordre[modulo(ordre.indexOf(cible) + 1, ordre.length)];
     }
     return cible;
   }
