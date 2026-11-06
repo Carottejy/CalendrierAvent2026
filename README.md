@@ -9,7 +9,7 @@ Adresse du site : https://carottejy.github.io/CalendrierAvent2026/
 ## Organisation
 
 ```
-jour-05-k3x9pa/        une appli = un dossier (nom difficile à deviner)
+spndle-k3x9pa/         une appli = un dossier (nom difficile à deviner)
   index.html           la surprise
   manifest.webmanifest nom, icônes, couleurs de l'appli installée
   sw.js                fonctionnement hors ligne (limité à ce dossier)
@@ -21,9 +21,12 @@ outils/                scripts et modèle
 
 ## Ajouter une appli
 
+Les applis ne sont liées à aucun jour : le QR code peut être offert n'importe
+quand, et l'appli reste accessible pour toujours ensuite.
+
 ```bash
 pip install qrcode pillow
-python3 outils/nouvelle_app.py --jour 5 --titre "Notre carte aux trésors"
+python3 outils/nouvelle_app.py --titre "Notre carte aux trésors" --icone "♥"
 ```
 
 Le script crée le dossier, les icônes, l'inscrit dans `apps.json` et

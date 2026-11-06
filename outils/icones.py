@@ -1,4 +1,4 @@
-"""Dessine les icônes d'une appli : le numéro du jour sur fond vert sapin."""
+"""Dessine les icônes d'une appli : un texte court (ou symbole) sur fond vert sapin."""
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -19,7 +19,7 @@ def _police(taille):
     return ImageFont.load_default(taille)
 
 
-def _icone(jour, taille, marge_securite):
+def _icone(texte, taille, marge_securite):
     """marge_securite : part de l'image gardée libre (icônes « maskable »)."""
     img = Image.new("RGB", (taille, taille), VERT_SAPIN)
     d = ImageDraw.Draw(img)
@@ -34,16 +34,17 @@ def _icone(jour, taille, marge_securite):
     rb = zone * 0.07
     d.ellipse([centre - rb, centre - r - rb, centre + rb, centre - r + rb], fill=ROUGE)
 
-    # numéro du jour
-    police = _police(int(zone * 0.48))
-    d.text((centre, centre + zone * 0.02), str(jour), font=police, fill=CREME, anchor="mm")
+    # texte central, réduit s'il est long
+    texte = str(texte)
+    police = _police(int(zone * (0.48 if len(texte) <= 2 else 0.30)))
+    d.text((centre, centre + zone * 0.02), texte, font=police, fill=CREME, anchor="mm")
     return img
 
 
-def dessiner_icones(jour, dossier):
+def dessiner_icones(texte, dossier):
     dossier = Path(dossier)
     dossier.mkdir(parents=True, exist_ok=True)
-    _icone(jour, 192, 0.04).save(dossier / "icone-192.png")
-    _icone(jour, 512, 0.04).save(dossier / "icone-512.png")
-    _icone(jour, 512, 0.12).save(dossier / "icone-maskable-512.png")
-    _icone(jour, 180, 0.08).save(dossier / "apple-touch-icon.png")
+    _icone(texte, 192, 0.04).save(dossier / "icone-192.png")
+    _icone(texte, 512, 0.04).save(dossier / "icone-512.png")
+    _icone(texte, 512, 0.12).save(dossier / "icone-maskable-512.png")
+    _icone(texte, 180, 0.08).save(dossier / "apple-touch-icon.png")

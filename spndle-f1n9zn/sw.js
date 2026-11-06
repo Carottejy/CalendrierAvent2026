@@ -1,7 +1,7 @@
 // Service worker propre à cette appli : il ne gère que son propre dossier.
 // Incrémenter VERSION à chaque modification de l'appli.
-const VERSION = 1;
-const CACHE = 'jour-01-di8hyq-v' + VERSION;
+const VERSION = 2;
+const CACHE = 'spndle-f1n9zn-v' + VERSION;
 
 // Fichiers à garder hors ligne (ajouter ici les images, sons, etc. de l'appli)
 const FICHIERS = [
@@ -25,7 +25,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((cles) =>
-      Promise.all(cles.filter((k) => k.startsWith('jour-01-di8hyq-') && k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(cles.filter((k) => k.startsWith('spndle-f1n9zn-') && k !== CACHE).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();

@@ -5,8 +5,8 @@ Usage :
     python3 outils/qrcodes.py
 
 Produit dans qrcodes/ :
-  - jour-XX-xxxxxx.png  (pour imprimer ou glisser dans une carte)
-  - jour-XX-xxxxxx.svg  (même chose, en vectoriel, net à toutes les tailles)
+  - <nom>-xxxxxx.png  (pour imprimer ou glisser dans une carte)
+  - <nom>-xxxxxx.svg  (même chose, en vectoriel, net à toutes les tailles)
   - planche.html        (toutes les cartes à imprimer et découper)
 """
 import json
@@ -42,8 +42,8 @@ def generer_tout():
         q.make_image(fill_color=VERT_SAPIN, back_color="white").save(DOSSIER_QR / f"{app['slug']}.png")
         q.make_image(image_factory=qrcode.image.svg.SvgPathImage).save(DOSSIER_QR / f"{app['slug']}.svg")
         cartes.append(
-            f'<figure><div class="jour">{app["jour"]}</div>'
-            f'<img src="{app["slug"]}.svg" alt="QR code du jour {app["jour"]}">'
+            f'<figure><div class="jour">{app.get("jour") or "🎁"}</div>'
+            f'<img src="{app["slug"]}.svg" alt="QR code">'
             f'<figcaption>Scanne-moi</figcaption></figure>'
         )
 

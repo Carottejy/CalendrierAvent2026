@@ -2,7 +2,6 @@
   'use strict';
 
   // ---------- Dates (heure de Paris) ----------
-  const PREMIER_JOUR = Date.UTC(2026, 11, 1); // 1er décembre 2026 = défi n°1
   const fmt = new Intl.DateTimeFormat('fr-FR', {
     timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
@@ -17,7 +16,8 @@
     return Date.UTC(+o.year, +o.month - 1, +o.day + decalage);
   }
   const cleJour = (decalage = 0) => new Date(utcDuJour(decalage)).toISOString().slice(0, 10);
-  const numeroDuJour = () => Math.round((utcDuJour() - PREMIER_JOUR) / 86400000);
+  // Nombre de jours depuis une date fixe : sert seulement au tirage du jour.
+  const indexDuJour = () => Math.round((utcDuJour() - Date.UTC(2026, 0, 1)) / 86400000);
   function secondesAvantMinuit() {
     const o = maintenant();
     return 86400 - (+o.hour * 3600 + +o.minute * 60 + +o.second);
@@ -53,7 +53,7 @@
   };
 
   function cibleDuJour(mode) {
-    const n = numeroDuJour();
+    const n = indexDuJour();
     const ordre = melange(MODES[mode].candidats, MODES[mode].graine);
     let cible = ordre[modulo(n, ordre.length)];
     if (mode === 'emojis') {
@@ -107,6 +107,12 @@
     s.dernier = cleJour();
     d.stats[mode] = s;
     ecrire(d);
+  }
+  // Jour 1 = le jour où l'appli a été ouverte pour la première fois sur ce téléphone.
+  function numeroPersonnel() {
+    const d = lire();
+    if (!d.premier) { d.premier = cleJour(); ecrire(d); }
+    return Math.round((Date.parse(cleJour()) - Date.parse(d.premier)) / 86400000) + 1;
   }
   function gagneAujourdhui(mode) {
     const p = (lire().parties || {})[mode];
@@ -354,7 +360,7 @@
 
   function partager(mode, p) {
     const n = p.essais.length;
-    let texte = `SPNdle #${numeroDuJour() + 1} ${MODES[mode].icone} trouvé en ${n} essai${n > 1 ? 's' : ''}`;
+    let texte = `SPNdle · jour ${numeroPersonnel()} ${MODES[mode].icone} trouvé en ${n} essai${n > 1 ? 's' : ''}`;
     if (mode === 'classique') {
       const carre = { vert: '🟩', orange: '🟧', rouge: '🟥' };
       const lignes = p.essais.map((nom) => comparer(PAR_NOM[nom], PAR_NOM[p.cible]).slice(1).map((c) => carre[c.cls]).join(''));
@@ -419,6 +425,7 @@
   aide.addEventListener('click', (e) => { if (e.target === aide) fermerAide(); });
 
   // Démarrage : premier mode non résolu
+  numeroPersonnel();
   modeCourant = Object.keys(MODES).find((m) => !gagneAujourdhui(m)) || 'classique';
   rendre();
   const d = lire();
