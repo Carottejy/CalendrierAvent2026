@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#3b2414">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Puzzle">
+  <title>Notre puzzle</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="preload" href="image.jpg" as="image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="ligne">
+      <h1>Notre puzzle</h1>
+      <span class="compteur" id="compteur">0 / 16</span>
+    </div>
+    <div class="ligne outils">
+      <div class="niveaux" id="niveaux" role="group" aria-label="Difficulté">
+        <button data-n="3">9</button>
+        <button data-n="4">16</button>
+        <button data-n="6">36</button>
+        <button data-n="8">64</button>
+      </div>
+      <button class="rond" id="apercu" aria-pressed="false" aria-label="Afficher le modèle en fond du plateau">👁️</button>
+      <button class="rond" id="melanger" aria-label="Mélanger les pièces restantes">🔀</button>
+    </div>
+  </header>
+
+  <main id="table">
+    <div id="plateau"></div>
+  </main>
+
+  <div class="victoire" id="victoire" hidden>
+    <div class="carte">
+      <p class="titre-victoire">Bravo ! 🧡</p>
+      <p id="bilan"></p>
+      <div class="boutons">
+        <button class="bouton" id="rejouer">Rejouer</button>
+        <button class="bouton secondaire" id="plus-dur">Plus de pièces</button>
+      </div>
+    </div>
+  </div>
+  <div class="coeurs" id="coeurs" aria-hidden="true"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>

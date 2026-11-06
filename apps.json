@@ -1,6 +1,12 @@
 [
   {
     "jour": null,
+    "slug": "puzzle-3esv1p",
+    "titre": "Notre puzzle",
+    "icone": "extrait de l'image"
+  },
+  {
+    "jour": null,
     "slug": "renard-tuv5kc",
     "titre": "Mon renard",
     "icone": "tête de renard"
