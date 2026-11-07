@@ -35,6 +35,10 @@ dans `index.html`.
 
 Pour régénérer seulement les QR codes : `python3 outils/qrcodes.py`.
 
+Les applis marquées `"prive": true` dans `apps.json` n'ont pas de QR code dans le
+dépôt : leur lien contient des informations privées (après le `#`, jamais envoyé
+au serveur) et leur QR code est généré à part.
+
 ## Mettre en ligne (une seule fois)
 
 Settings → Pages → *Deploy from a branch* → `main` / `(root)` → Save.

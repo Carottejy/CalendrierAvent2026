@@ -1,6 +1,13 @@
 [
   {
     "jour": null,
+    "slug": "chasse-m8w0v5",
+    "titre": "Chasse de Noël",
+    "icone": "créature",
+    "prive": true
+  },
+  {
+    "jour": null,
     "slug": "puzzle-3esv1p",
     "titre": "Notre puzzle",
     "icone": "extrait de l'image"

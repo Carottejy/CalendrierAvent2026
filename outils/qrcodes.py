@@ -37,6 +37,8 @@ def generer_tout():
 
     cartes = []
     for app in apps:
+        if app.get("prive"):
+            continue  # QR code contenant des données privées : généré à part, hors du dépôt
         url = url_de(app["slug"])
         q = _qr(url)
         q.make_image(fill_color=VERT_SAPIN, back_color="white").save(DOSSIER_QR / f"{app['slug']}.png")

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1d3557">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chasse">
+  <title>Chasse de Noël</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Carte -->
+  <section id="ecran-carte" class="ecran">
+    <header class="barre-haut">
+      <h1>Chasse de Noël</h1>
+      <button class="pastille" id="btn-hotte">🎒 <span id="compte">0</span>/24</button>
+    </header>
+    <canvas id="carte"></canvas>
+    <p class="credit">© OpenStreetMap</p>
+    <div class="bas">
+      <p class="etat-gps" id="etat-gps">Recherche de ta position…</p>
+      <button class="grelot" id="btn-grelot" aria-label="Utiliser un grelot magique">🔔<span id="nb-grelots">3</span></button>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+  </section>
+
+  <!-- Capture -->
+  <section id="ecran-capture" class="ecran" hidden>
+    <video id="video" playsinline muted autoplay></video>
+    <div class="decor-hiver" id="decor"></div>
+    <header class="barre-capture">
+      <button class="pastille" id="btn-retour">↩ Carte</button>
+      <span class="pastille" id="info-capture"></span>
+    </header>
+    <div class="zone-creature" id="zone-creature">
+      <div class="cible" id="cible"></div>
+      <div class="creature-capture" id="creature-capture"></div>
+    </div>
+    <p class="consigne-capture" id="consigne-capture">Lance la boule de neige vers le haut !</p>
+    <div class="boule" id="boule"></div>
+  </section>
+
+  <!-- Hotte (collection) -->
+  <section id="ecran-hotte" class="ecran" hidden>
+    <header class="barre-haut">
+      <button class="pastille" id="btn-fermer-hotte">↩ Carte</button>
+      <h1>Ma hotte</h1>
+      <span class="pastille" id="compte-hotte">0/24</span>
+    </header>
+    <div class="grille" id="grille"></div>
+  </section>
+
+  <!-- Fiche d'une créature / capture réussie -->
+  <div class="voile" id="fiche" hidden>
+    <div class="carte-fiche">
+      <p class="bandeau" id="fiche-bandeau"></p>
+      <div class="fiche-image" id="fiche-image"></div>
+      <h2 id="fiche-nom"></h2>
+      <p class="rarete" id="fiche-rarete"></p>
+      <p id="fiche-desc"></p>
+      <p class="date" id="fiche-date"></p>
+      <button class="bouton" id="fiche-ok">Super !</button>
+    </div>
+  </div>
+
+  <!-- Écrans d'information -->
+  <div class="voile" id="intro" hidden>
+    <div class="carte-fiche">
+      <div class="emoji-titre">🎄</div>
+      <h2>La grande chasse de Noël</h2>
+      <p>24 créatures de Noël se sont échappées et se cachent tout près d'ici, dans un rayon de 15 mètres.</p>
+      <p>Promène-toi, approche-toi d'elles et lance des boules de neige pour les attraper toutes !</p>
+      <p class="petit">Le jeu a besoin de ta position, et de la caméra pendant les captures.</p>
+      <button class="bouton" id="btn-commencer">C'est parti !</button>
+    </div>
+  </div>
+
+  <div class="voile" id="sans-centre" hidden>
+    <div class="carte-fiche">
+      <div class="emoji-titre">🧭</div>
+      <h2>Où se cachent-elles ?</h2>
+      <p>Ouvre le jeu en scannant le QR code qu'on t'a offert : il indique où les créatures se cachent.</p>
+      <p class="petit">Tu es déjà sur place ? Tu peux aussi les faire apparaître autour de toi.</p>
+      <button class="bouton" id="btn-ici">Les faire apparaître ici</button>
+    </div>
+  </div>
+
+  <div class="voile" id="fin" hidden>
+    <div class="carte-fiche">
+      <div class="emoji-titre">🏆</div>
+      <h2>Toutes attrapées !</h2>
+      <p>Les 24 créatures de Noël sont dans ta hotte. Elles n'ont jamais été aussi bien gardées.</p>
+      <p class="message-fin" id="message-fin">Joyeux Noël 🧡</p>
+      <button class="bouton" id="btn-fin">Voir ma hotte</button>
+    </div>
+  </div>
+
+  <script src="creatures.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
