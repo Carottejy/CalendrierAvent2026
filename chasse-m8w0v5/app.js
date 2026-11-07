@@ -8,6 +8,8 @@
   const PORTEE_MIN = 5;           // portée de capture minimale (m)
   const PORTEE_MAX = 9;           // portée de capture maximale (m) quand le GPS est imprécis
   const GRELOTS_DEPART = 3;
+  const ACTIVES = 3;              // créatures réveillées en même temps : il faut parcourir la zone
+  const BRUISSEMENT = 12;         // en dessous de cette distance (m), une créature cachée fait bouger les buissons
 
   const $ = (id) => document.getElementById(id);
 
@@ -15,7 +17,7 @@
   function lire() {
     try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (e) { return {}; }
   }
-  let etat = Object.assign({ centre: null, captures: {}, deplacees: {}, grelots: GRELOTS_DEPART, jourGrelot: null, intro: false }, lire());
+  let etat = Object.assign({ centre: null, captures: {}, deplacees: {}, grelots: GRELOTS_DEPART, jourGrelot: null, intro: false, marche: 0 }, lire());
   function sauver() {
     try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) { /* stockage indisponible */ }
   }
@@ -53,6 +55,8 @@
     };
   }
   let positions = [];
+  let ordre = [];      // ordre de réveil des créatures (les légendaires à la fin)
+  let traces = [];     // décalage des buissons qui bougent, pour ne pas trahir la position exacte
   function calculerPositions() {
     const c = etat.centre;
     const graine = c ? Math.round(c.lat * 1e5) * 31 + Math.round(c.lng * 1e5) : 2026;
@@ -67,6 +71,11 @@
       if (positions.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) >= ecart)) positions.push(p);
     }
     for (const i in etat.deplacees) positions[i] = etat.deplacees[i];
+    const melange = CREATURES.map((_, i) => i);
+    for (let k = melange.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [melange[k], melange[j]] = [melange[j], melange[k]]; }
+    const rang = { commun: 0, rare: 1, legendaire: 2 };
+    ordre = melange.map((i, k) => [i, k + rang[CREATURES[i].rarete] * 8]).sort((x, y) => x[1] - y[1]).map((x) => x[0]);
+    traces = CREATURES.map(() => [(r() - 0.5) * 4, (r() - 0.5) * 4]);
   }
 
   // ================= GPS =================
@@ -99,8 +108,11 @@
       while (historique.length > 1 && Date.now() - historique[0].t > 6000) historique.shift();
       // moyenne pondérée par la précision des dernières mesures (lisse les sauts du GPS)
       let sx = 0; let sy = 0; let sw = 0;
-      for (const h of historique) { const w = 1 / (h.acc * h.acc); sx += h.x * w; sy += h.y * w; sw += w; }
-      joueur = { x: sx / sw, y: sy / sw };
+      const t = Date.now();
+      for (const h of historique) { const w = Math.exp(-(t - h.t) / 2500) / (h.acc * h.acc); sx += h.x * w; sy += h.y * w; sw += w; }
+      const nouveau = { x: sx / sw, y: sy / sw };
+      if (joueur) compterPas(nouveau, pos.coords.accuracy);
+      joueur = nouveau;
       precision = pos.coords.accuracy;
       majEtat();
     }, (err) => {
@@ -110,31 +122,76 @@
     }, { enableHighAccuracy: true, maximumAge: 1500, timeout: 20000 });
   }
 
+  // Distance parcourue (on ignore les petits sauts du GPS)
+  let dernierPas = null;
+  function compterPas(p, acc) {
+    if (!dernierPas) { dernierPas = p; return; }
+    const d = Math.hypot(p.x - dernierPas.x, p.y - dernierPas.y);
+    if (d >= Math.max(2, acc * 0.4) && d < 30) {
+      etat.marche += d;
+      dernierPas = p;
+      sauver();
+    }
+  }
+
   const portee = () => Math.min(PORTEE_MAX, Math.max(PORTEE_MIN, (precision || 6) * 0.7));
   const restantes = () => CREATURES.map((_, i) => i).filter((i) => !etat.captures[i]);
+  const actives = () => ordre.filter((i) => !etat.captures[i]).slice(0, ACTIVES);
   const distance = (i) => Math.hypot(positions[i][0] - joueur.x, positions[i][1] - joueur.y);
+  const detection = () => portee() + 3;
+  const visible = (i) => !!joueur && distance(i) <= detection();
+  const apparues = new Set();
 
   function majEtat() {
     const el = $('etat-gps');
-    const n = Object.keys(etat.captures).length;
-    $('compte').textContent = n;
+    $('compte').textContent = Object.keys(etat.captures).length;
+    majRadar();
     if (!joueur) return;
     const loin = Math.hypot(joueur.x, joueur.y);
     if (loin > RAYON_ZONE + 25) {
       el.textContent = `Tu es à ${Math.round(loin)} m de la zone de chasse. Rapproche-toi ! 🧭`;
       return;
     }
-    const reste = restantes();
-    if (!reste.length) { el.textContent = 'Toutes les créatures sont dans ta hotte ! 🎉'; return; }
-    const proches = reste.filter((i) => distance(i) <= portee());
-    if (proches.length) {
-      el.textContent = proches.length > 1
-        ? `✨ ${proches.length} créatures sont à portée ! Touche-en une sur la carte.`
-        : '✨ Une créature est à portée ! Touche-la sur la carte.';
-    } else {
-      const d = Math.min(...reste.map(distance));
-      el.textContent = `Approche-toi encore d'environ ${Math.max(1, Math.round(d - portee()))} m de la créature la plus proche 👣${precision > 12 ? ' (GPS imprécis ici)' : ''}`;
+    const reveil = actives();
+    if (!reveil.length) { el.textContent = 'Toutes les créatures sont dans ta hotte ! 🎉'; return; }
+    // nouvelle apparition ?
+    for (const i of reveil) {
+      if (visible(i) && !apparues.has(i)) {
+        apparues.add(i);
+        if (navigator.vibrate) navigator.vibrate([40, 40, 40]);
+        toast('Une créature sauvage apparaît ! ✨');
+      }
+      if (!visible(i)) apparues.delete(i);
     }
+    const vues = reveil.filter(visible);
+    const aPortee = vues.filter((i) => distance(i) <= portee());
+    if (aPortee.length) {
+      el.textContent = aPortee.length > 1 ? `✨ ${aPortee.length} créatures sont là ! Touche-en une.` : '✨ Une créature est là ! Touche-la sur la carte.';
+    } else if (vues.length) {
+      el.textContent = 'Tu la vois ? Avance encore un peu vers elle 👀';
+    } else if (reveil.some((i) => distance(i) < BRUISSEMENT)) {
+      el.textContent = 'Ça bouge dans les buissons… 🍃 Cherche tout autour !';
+    } else {
+      const m = Math.round(etat.marche);
+      el.textContent = `Promène-toi dans la zone pour trouver des créatures 🌲${m >= 10 ? ` · ${m} m parcourus` : ''}`;
+    }
+  }
+
+  // Radar : silhouettes des créatures réveillées, avec des empreintes selon la distance
+  function majRadar() {
+    const radar = $('radar');
+    const liste = actives();
+    if (!joueur || !liste.length) { radar.replaceChildren(); return; }
+    liste.sort((x, y) => distance(x) - distance(y));
+    radar.replaceChildren(...liste.map((i) => {
+      const d = distance(i);
+      const det = detection();
+      const pas = visible(i) ? '✨' : d < det + 4 ? '👣' : d < det + 9 ? '👣👣' : '👣👣👣';
+      const s = document.createElement('div');
+      s.className = `radar-case${visible(i) ? ' vue' : ''}`;
+      s.innerHTML = `<img src="${images[i].src}" alt=""><span>${pas}</span>`;
+      return s;
+    }));
   }
 
   // ================= Carte =================
@@ -234,26 +291,46 @@
       ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
     }
 
-    // créatures restantes
+    // créatures réveillées : visibles seulement de près, sinon les buissons bougent
     const taille = Math.max(34, Math.min(52, vue.echelle * 2.6));
-    for (const i of restantes()) {
-      const [x, y] = ecran(...positions[i]);
-      const proche = joueur && distance(i) <= portee();
-      const saut = proche ? Math.abs(Math.sin(t / 220 + i)) * 8 : Math.sin(t / 600 + i) * 2;
-      ctx.beginPath();
-      ctx.ellipse(x, y + taille * 0.42, taille * 0.32, taille * 0.1, 0, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,.15)';
-      ctx.fill();
-      if (proche) {
+    if (joueur) {
+      for (const i of actives()) {
+        const d = distance(i);
+        if (!visible(i)) {
+          if (d < BRUISSEMENT) {
+            const [x, y] = ecran(positions[i][0] + traces[i][0], positions[i][1] + traces[i][1]);
+            const k = Math.sin(t / 140 + i * 3);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(k * 0.25);
+            ctx.font = `${Math.round(taille * 0.6)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.globalAlpha = 0.65 + 0.35 * Math.abs(k);
+            ctx.fillText('🍃', -taille * 0.15, 0);
+            ctx.fillText('🍃', taille * 0.18, taille * 0.12);
+            ctx.restore();
+          }
+          continue;
+        }
+        const [x, y] = ecran(...positions[i]);
+        const proche = d <= portee();
+        const saut = proche ? Math.abs(Math.sin(t / 220 + i)) * 8 : Math.sin(t / 600 + i) * 2;
         ctx.beginPath();
-        ctx.arc(x, y, taille * 0.62, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 212, 59, .35)';
+        ctx.ellipse(x, y + taille * 0.42, taille * 0.32, taille * 0.1, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,.15)';
         ctx.fill();
+        if (proche) {
+          ctx.beginPath();
+          ctx.arc(x, y, taille * 0.62, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 212, 59, .35)';
+          ctx.fill();
+        }
+        ctx.save();
+        ctx.globalAlpha = proche ? 1 : 0.8;
+        if (images[i].complete) ctx.drawImage(images[i], x - taille / 2, y - taille / 2 - saut, taille, taille);
+        ctx.restore();
       }
-      ctx.save();
-      ctx.globalAlpha = proche ? 1 : 0.85;
-      if (images[i].complete) ctx.drawImage(images[i], x - taille / 2, y - taille / 2 - saut, taille, taille);
-      ctx.restore();
     }
   }
 
@@ -268,7 +345,7 @@
     const sx = ev.clientX - r.left; const sy = ev.clientY - r.top;
     const taille = Math.max(34, Math.min(52, vue.echelle * 2.6));
     let choix = -1; let meilleur = taille * 0.75;
-    for (const i of restantes()) {
+    for (const i of actives().filter(visible)) {
       const [x, y] = ecran(...positions[i]);
       const d = Math.hypot(sx - x, sy - y);
       if (d < meilleur) { meilleur = d; choix = i; }
@@ -304,7 +381,7 @@
   $('btn-grelot').addEventListener('click', () => {
     if (!joueur) { toast('On attend encore ta position… 📍'); return; }
     if (etat.grelots <= 0) { toast('Plus de grelot pour aujourd\'hui. Un nouveau arrive demain 🔔'); return; }
-    const reste = restantes();
+    const reste = actives();
     if (!reste.length) return;
     const i = reste.reduce((a, b) => (distance(a) < distance(b) ? a : b));
     if (distance(i) <= portee() * 0.8) { toast('Une créature est déjà juste à côté de toi ! 👀'); return; }
@@ -594,7 +671,7 @@
   });
 
   // outils de test (mode démo uniquement)
-  if (DEMO) window.__chasse = { positions: () => positions, ecran: (i) => ecran(...positions[i]), etat: () => etat };
+  if (DEMO) window.__chasse = { positions: () => positions, ecran: (i) => ecran(...positions[i]), etat: () => etat, actives };
 
   window.addEventListener('resize', () => { if (vue) dimensionner(); });
   requestAnimationFrame(boucle);

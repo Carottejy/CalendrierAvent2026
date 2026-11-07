@@ -25,7 +25,10 @@
     <canvas id="carte"></canvas>
     <p class="credit">© OpenStreetMap</p>
     <div class="bas">
-      <p class="etat-gps" id="etat-gps">Recherche de ta position…</p>
+      <div class="panneau">
+        <div class="radar" id="radar"></div>
+        <p class="etat-gps" id="etat-gps">Recherche de ta position…</p>
+      </div>
       <button class="grelot" id="btn-grelot" aria-label="Utiliser un grelot magique">🔔<span id="nb-grelots">3</span></button>
     </div>
     <div class="toast" id="toast" hidden></div>
@@ -76,7 +79,8 @@
       <div class="emoji-titre">🎄</div>
       <h2>La grande chasse de Noël</h2>
       <p>24 créatures de Noël se sont échappées et se cachent tout près d'ici, dans un rayon de 15 mètres.</p>
-      <p>Promène-toi, approche-toi d'elles et lance des boules de neige pour les attraper toutes !</p>
+      <p>Promène-toi : elles ne se montrent que quand tu t'approches. Ton radar 👣 et les buissons qui bougent 🍃 t'aideront à les trouver.</p>
+      <p>Lance-leur des boules de neige pour les attraper toutes !</p>
       <p class="petit">Le jeu a besoin de ta position, et de la caméra pendant les captures.</p>
       <button class="bouton" id="btn-commencer">C'est parti !</button>
     </div>
