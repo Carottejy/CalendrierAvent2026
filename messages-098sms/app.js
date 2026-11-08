@@ -238,6 +238,14 @@
   $('btn-photo').addEventListener('click', () => demanderPhoto());
 
   // ================= Texte libre =================
+  // Mot-clé reconnu : mot entier, ou début de mot pour les mots d'au moins 4 lettres (« caresse » → « caresses »)
+  function trouverRegle(texte) {
+    const n = normaliser(texte);
+    const mots = n.trim().split(' ');
+    return MOTS_CLES.find((r) => r.mots.some((m) => (m.includes(' ')
+      ? n.includes(` ${m} `)
+      : mots.some((w) => w === m || w === `${m}s` || (m.length >= 4 && w.startsWith(m))))));
+  }
   $('saisie').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const texte = champ.value.trim();
@@ -252,22 +260,25 @@
       jouer('apresNom');
       return;
     }
-    const n = normaliser(texte);
-    const regle = MOTS_CLES.find((r) => r.mots.some((m) => n.includes(` ${m} `) || n.includes(` ${m}`)));
+    const regle = trouverRegle(texte);
     if (regle && regle.action === 'photo') { demanderPhoto(texte); return; }
     choixEl.replaceChildren();
     ajouter('moi', texte);
     if (regle && regle.go) { jouer(regle.go); return; }
     occuper(true);
     if (regle) {
-      for (const l of regle.vi) await viDit(perso(l));
+      for (const l of auHasard(regle.reps)) await viDit(perso(l));
       chauffer(regle.chaleur);
     } else {
-      await viDit(perso(auHasard(REPONSES_LIBRES)));
+      // réponses de plus en plus audacieuses selon l'avancement de la relation
+      const niveau = Math.min(REPONSES_LIBRES.length - 1, Math.floor(etat.prochaine / 4));
+      const pool = REPONSES_LIBRES.slice(Math.max(0, niveau - 1), niveau + 1).flat();
+      await viDit(perso(auHasard(pool)));
       chauffer(1);
     }
     occuper(false);
-    await relancer();
+    if (Math.random() < 0.5) proposerSujets();
+    else await relancer();
   });
 
   // ================= Galerie =================
