@@ -11,7 +11,7 @@
     try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (e) { return {}; }
   }
   const etat = Object.assign({
-    nom: null, chaleur: 0, histo: [], flags: {}, vues: [], dernierJour: null, photos: [], recents: [],
+    nom: null, chaleur: 0, histo: [], flags: {}, vues: [], dernierJour: null, photos: [], recents: [], prochaine: 0, depuisPhoto: 0,
   }, lire());
   function sauver() {
     if (etat.histo.length > MAX_HISTO) etat.histo = etat.histo.slice(-MAX_HISTO);
@@ -21,7 +21,9 @@
   // Les identifiants des photos (Drive) arrivent par le lien du QR code : …/#p=id1.id2…
   const params = new URLSearchParams(location.hash.slice(1));
   if (params.get('p')) {
-    etat.photos = params.get('p').split('.').filter((x) => /^[\w-]{10,}$/.test(x));
+    // liste ordonnée : de la plus sage à la plus osée
+    const liste = params.get('p').split('.').filter((x) => /^[\w-]{10,}$/.test(x));
+    if (liste.join('.') !== etat.photos.join('.')) { etat.photos = liste; etat.prochaine = 0; etat.vues = []; }
     sauver();
     history.replaceState(null, '', location.pathname);
   }
@@ -129,6 +131,10 @@
     for (const l of s.vi || []) await viDit(perso(l));
     chauffer(s.chaleur);
     if (s.flag) { etat.flags[s.flag] = true; sauver(); }
+    if (id === 'apresNom' && etat.photos.length && etat.prochaine === 0) {
+      await attendre(700);
+      await envoyerPhoto(PHOTO_PREMIERE);
+    }
     occuper(false);
     if (s.demandeNom) { attendNom = true; champ.placeholder = 'Ton prénom…'; champ.focus(); return; }
     if (s.choix) proposer(s.choix);
@@ -138,7 +144,17 @@
   async function relancer() {
     occuper(true);
     await attendre(500);
-    await viDit(perso(auHasard(RELANCES)));
+    etat.depuisPhoto += 1;
+    sauver();
+    const reste = etat.prochaine < etat.photos.length;
+    if (reste && etat.depuisPhoto >= 3 && Math.random() < 0.3) {
+      // photo envoyée sans qu'on la demande
+      await envoyerPhoto(auHasard(PHOTO_SPONTANEE));
+      await attendre(1200);
+      await viDit(perso(auHasard(PHOTO_APRES)));
+    } else {
+      await viDit(perso(auHasard(RELANCES)));
+    }
     occuper(false);
     proposerSujets();
   }
@@ -177,6 +193,30 @@
   }
 
   // ================= Photos =================
+  // Envoie la photo suivante dans l'ordre (puis, une fois toutes envoyées, en revoit une au hasard)
+  async function envoyerPhoto(ligne) {
+    let id;
+    if (etat.prochaine < etat.photos.length) {
+      id = etat.photos[etat.prochaine];
+      etat.prochaine += 1;
+    } else {
+      id = auHasard(etat.photos);
+      ligne = PHOTO_REVOIR;
+    }
+    await viDit(perso(ligne));
+    const indic = document.createElement('div');
+    indic.className = 'ecrit-bulle';
+    indic.innerHTML = '<i></i><i></i><i></i>';
+    fil.append(indic); statut(true); defiler();
+    await attendre(1600);
+    indic.remove(); statut(false);
+    ajouter('vi', id, 'photo');
+    if (!etat.vues.includes(id)) etat.vues.push(id);
+    etat.depuisPhoto = 0;
+    sauver();
+    if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+  }
+
   async function demanderPhoto(texte) {
     if (occupe) return;
     choixEl.replaceChildren();
@@ -187,20 +227,8 @@
     } else if (etat.chaleur < SEUIL_PHOTO) {
       await viDit(perso(auHasard(PHOTO_REFUS)));
     } else {
-      let restantes = etat.photos.filter((id) => !etat.vues.includes(id));
-      if (!restantes.length) { restantes = etat.photos.slice(); await viDit(perso(PHOTO_REVOIR)); }
-      const id = auHasard(restantes);
-      await viDit(perso(auHasard(PHOTO_ENVOI)));
-      const indic = document.createElement('div');
-      indic.className = 'ecrit-bulle';
-      indic.innerHTML = '<i></i><i></i><i></i>';
-      fil.append(indic); statut(true); defiler();
-      await attendre(1600);
-      indic.remove(); statut(false);
-      ajouter('vi', id, 'photo');
-      if (!etat.vues.includes(id)) etat.vues.push(id);
+      await envoyerPhoto(auHasard(PHOTO_ENVOI));
       chauffer(-SEUIL_PHOTO);
-      if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
       await attendre(1400);
       await viDit(perso(auHasard(PHOTO_APRES)));
     }

@@ -154,7 +154,15 @@ const PHOTO_ENVOI = [
   'T\'as gagné. Mais après, c\'est ton tour…',
 ];
 const PHOTO_APRES = ['Alors ? 😏', 'Respire, {petitnom}.', 'Tu dis plus rien ? Je prends ça comme un compliment.', 'Je veux voir ta tête, là.'];
-const PHOTO_REVOIR = 'Tu veux revoir mes photos ? Je savais que tu craquerais.';
+const PHOTO_PREMIERE = 'Tiens. Comme ça tu sauras à quoi ressemble la fille qui va t\'empêcher de dormir.';
+const PHOTO_SPONTANEE = [
+  'J\'ai pensé à toi. Du coup… tiens.',
+  'Je m\'ennuyais. Cadeau.',
+  'Me demande pas pourquoi. Regarde, c\'est tout.',
+  'Je viens de la prendre. Pour toi et personne d\'autre.',
+  'T\'as rien demandé, je sais. Mais j\'avais envie.',
+];
+const PHOTO_REVOIR = 'Tu veux revoir celle-là ? Je savais que tu craquerais.';
 const PHOTO_AUCUNE = 'Mes photos sont restées à Zaun… Va falloir te contenter de ton imagination. Et crois-moi, la mienne travaille dur.';
 
 const BONJOURS = [
