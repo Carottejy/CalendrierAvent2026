@@ -8,6 +8,13 @@
   },
   {
     "jour": null,
+    "slug": "messages-098sms",
+    "titre": "Messages",
+    "icone": "bulle",
+    "prive": true
+  },
+  {
+    "jour": null,
     "slug": "puzzle-3esv1p",
     "titre": "Notre puzzle",
     "icone": "extrait de l'image"

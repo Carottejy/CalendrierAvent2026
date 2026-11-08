@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#14111c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Messages">
+  <meta name="referrer" content="no-referrer">
+  <title>Messages</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="entete">
+      <div class="avatar">VI</div>
+      <div class="qui">
+        <strong>Vi</strong>
+        <span id="statut">en ligne</span>
+      </div>
+      <div class="chaleur" title="Chaleur">
+        <span>🔥</span>
+        <div class="jauge"><i id="jauge"></i></div>
+      </div>
+      <button class="icone" id="btn-galerie" aria-label="Photos reçues">🖼️</button>
+    </header>
+
+    <main class="fil" id="fil"></main>
+
+    <div class="choix" id="choix"></div>
+
+    <form class="saisie" id="saisie" autocomplete="off">
+      <button type="button" class="icone" id="btn-photo" aria-label="Demander une photo">📸</button>
+      <input id="champ" placeholder="Écris à Vi…" maxlength="300" enterkeyhint="send">
+      <button class="envoyer" aria-label="Envoyer">➤</button>
+    </form>
+  </div>
+
+  <div class="voile" id="galerie" hidden>
+    <div class="panneau">
+      <header><h2>Ses photos pour toi</h2><button class="icone" id="fermer-galerie" aria-label="Fermer">✕</button></header>
+      <div class="grille" id="grille"></div>
+      <p class="vide" id="galerie-vide">Aucune photo pour l'instant… Chauffe-la un peu 🔥</p>
+    </div>
+  </div>
+
+  <div class="voile plein" id="visionneuse" hidden>
+    <img id="grande" alt="">
+  </div>
+
+  <script src="dialogues.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
